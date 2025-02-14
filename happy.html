@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务生成工具</title>
+</head>
+<body>
+    <h1>生成任务</h1>
+    <form id="taskForm">
+        <label for="merchant1_id">商贩1 ID:</label>
+        <input type="text" id="merchant1_id" name="merchant1_id" required><br>
+        
+        <label for="merchant1_name">商贩1 名称:</label>
+        <input type="text" id="merchant1_name" name="merchant1_name" required><br>
+        
+        <label for="merchant2_id">商贩2 ID:</label>
+        <input type="text" id="merchant2_id" name="merchant2_id" required><br>
+        
+        <label for="merchant2_name">商贩2 名称:</label>
+        <input type="text" id="merchant2_name" name="merchant2_name" required><br>
+
+        <label for="dimension_checklist">选择维度:</label><br>
+        <input type="checkbox" name="dimension" value="price"> 价格
+        <input type="checkbox" name="dimension" value="batch"> 批次
+        <input type="checkbox" name="dimension" value="origin"> 产地<br>
+
+        <button type="submit">生成任务</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                merchant1_id: formData.get('merchant1_id'),
+                merchant1_name: formData.get('merchant1_name'),
+                merchant2_id: formData.get('merchant2_id'),
+                merchant2_name: formData.get('merchant2_name'),
+                dimension_checklist: formData.getAll('dimension')
+            };
+
+            fetch('/generate_assessment_task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('result').innerHTML = `
+                    <h3>任务ID: ${result.task_id}</h3>
+                    <p>任务状态: ${result.task_status}</p>
+                    <p>生成原因: ${result.reason}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('生成任务时出错');
+            });
+        });
+    </script>
+</body>
+</html>
